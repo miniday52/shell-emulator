@@ -2,6 +2,7 @@
 
 import getpass
 import socket
+import time
 
 from emulator.commands import COMMANDS
 from emulator.errors import ExitRequest, ShellError
@@ -22,6 +23,8 @@ class Shell:
         self.host = socket.gethostname()
         self.vfs = vfs if vfs is not None else default_vfs()
         self.cwd = self.vfs.resolve(self.vfs.root, self.vfs.home)
+        self.previous_dir = None
+        self.start_time = time.time()
 
     def display_path(self):
         """Текущий путь для приглашения; домашний каталог — ~."""

@@ -1,0 +1,46 @@
+# Стартовый скрипт этапа 4 (запуск с examples/vfs/deep.xml).
+# --- pwd ---
+pwd
+pwd extra
+# --- ls ---
+ls
+ls -a
+ls -l
+ls -la /
+ls /etc /var/log
+ls ~/notes.txt
+ls -l projects/app/assets
+ls /nope
+ls -z
+# --- cd ---
+cd projects/app
+pwd
+cd ..
+pwd
+cd ../../..
+pwd
+cd -
+cd
+pwd
+cd /etc/motd
+cd /does/not/exist
+cd a b
+cd /var/log
+# --- uniq ---
+uniq system.log
+uniq -c system.log
+uniq -d system.log
+uniq -u system.log
+uniq -ci ~/notes.txt
+uniq
+uniq /var
+uniq missing.txt
+uniq a b
+uniq -x system.log
+# --- uptime ---
+uptime
+uptime -p
+uptime -s
+uptime now
+uptime -q
+exit

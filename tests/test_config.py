@@ -53,11 +53,11 @@ class ScriptTest(unittest.TestCase):
 
     def test_errors_are_skipped(self):
         """Ошибочные строки пропускаются, выполнение продолжается."""
-        self.write("# comment\nbad\n\ncd x\nexit oops\n")
+        self.write("# comment\nbad\n\npwd\nexit oops\n")
         self.assertEqual(self.shell.run_script(self.path), 2)
         self.assertIn(":2: line skipped", self.out.text)
         self.assertIn(":5: line skipped", self.out.text)
-        self.assertIn("$ cd x", self.out.text)
+        self.assertIn("$ pwd", self.out.text)
 
     def test_exit_stops_script(self):
         """exit в скрипте завершает работу."""
