@@ -40,6 +40,29 @@ class Shell:
             return False
         return True
 
+    def run_script(self, path):
+        """Выполняет стартовый скрипт построчно.
+
+        Ввод и вывод отображаются как диалог с пользователем. Ошибочные
+        строки пропускаются с сообщением об ошибке. Пустые строки и
+        комментарии (#) игнорируются. Возвращает число ошибочных строк.
+        """
+        try:
+            with open(path, encoding="utf-8-sig") as file:
+                lines = file.read().splitlines()
+        except OSError as error:
+            raise ShellError(
+                f"cannot read script '{path}': {error.strerror}") from None
+        failed = 0
+        for number, line in enumerate(lines, start=1):
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            self.output(self.prompt() + line)
+            if not self.run_line(line):
+                failed += 1
+                self.output(f"[script] {path}:{number}: line skipped")
+        return failed
+
     def repl(self, read=input):
         """Интерактивный цикл чтения-выполнения. Возвращает код выхода."""
         while True:

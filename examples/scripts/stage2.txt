@@ -1,0 +1,9 @@
+# Стартовый скрипт этапа 2: последовательное выполнение,
+# ошибочные строки пропускаются.
+ls
+ls -l docs
+cd /home
+unknown_command arg1
+exit not_a_number
+cd ..
+exit 0
