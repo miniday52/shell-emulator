@@ -6,20 +6,37 @@ import socket
 from emulator.commands import COMMANDS
 from emulator.errors import ExitRequest, ShellError
 from emulator.parser import parse
+from emulator.vfs import SEPARATOR, default_vfs
 
 
 class Shell:
     """Командная оболочка эмулятора."""
 
-    def __init__(self, output=print):
-        """Создаёт оболочку; output — функция вывода строки."""
+    def __init__(self, vfs=None, output=print):
+        """Создаёт оболочку над VFS; output — функция вывода строки.
+
+        Если VFS не передана, создаётся VFS по умолчанию в памяти.
+        """
         self.output = output
         self.user = getpass.getuser()
         self.host = socket.gethostname()
+        self.vfs = vfs if vfs is not None else default_vfs()
+        self.cwd = self.vfs.resolve(self.vfs.root, self.vfs.home)
+
+    def display_path(self):
+        """Текущий путь для приглашения; домашний каталог — ~."""
+        path, home = self.cwd.path, self.vfs.home
+        if home == SEPARATOR:
+            return path
+        if path == home:
+            return "~"
+        if path.startswith(home + SEPARATOR):
+            return "~" + path[len(home):]
+        return path
 
     def prompt(self):
         """Возвращает приглашение вида user@host:~$ ."""
-        return f"{self.user}@{self.host}:~$ "
+        return f"{self.user}@{self.host}:{self.display_path()}$ "
 
     def execute(self, line):
         """Выполняет одну строку. Ошибки выбрасываются как ShellError."""

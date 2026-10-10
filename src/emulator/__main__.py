@@ -5,13 +5,23 @@ import sys
 from emulator.config import dump_config, parse_args
 from emulator.errors import ExitRequest, ShellError
 from emulator.shell import Shell
+from emulator.vfs import VFSError, default_vfs, load_vfs
+
+
+def open_vfs(path):
+    """Загружает VFS из файла или создаёт VFS по умолчанию."""
+    return load_vfs(path) if path else default_vfs()
 
 
 def main(argv=None):
     """Запускает эмулятор: стартовый скрипт, затем интерактивный режим."""
     config = parse_args(argv)
-    shell = Shell()
-    dump_config(config, shell.output)
+    dump_config(config, print)
+    try:
+        shell = Shell(open_vfs(config.vfs))
+    except VFSError as error:
+        print(f"error: VFS load failed: {error}")
+        return 1
     try:
         if config.script:
             failed = shell.run_script(config.script)
