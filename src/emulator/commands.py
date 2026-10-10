@@ -166,6 +166,70 @@ def cmd_uniq(shell, args):
         shell.output(prefix + line)
 
 
+def _is_inside(node, ancestor):
+    """Проверяет, что node совпадает с ancestor или вложен в него."""
+    while node is not None:
+        if node is ancestor:
+            return True
+        node = node.parent
+    return False
+
+
+def _rm_problem(shell, path, node, flags):
+    """Возвращает причину, по которой удалить узел нельзя, или None."""
+    if path.rstrip("/").split("/")[-1] in (".", ".."):
+        return f"refusing to remove '.' or '..' directory: skipping '{path}'"
+    if node.parent is None:
+        return "it is dangerous to operate recursively on '/'"
+    if _is_inside(shell.cwd, node):
+        return f"cannot remove '{path}': current directory is inside"
+    if node.is_dir and "r" not in flags:
+        if "d" not in flags:
+            return f"cannot remove '{path}': Is a directory"
+        if node.children:
+            return f"cannot remove '{path}': Directory not empty"
+    return None
+
+
+def _rm_one(shell, path, flags):
+    """Удаляет один путь; возвращает сообщение об ошибке или None."""
+    node = shell.vfs.resolve(shell.cwd, path)
+    if node is None:
+        if "f" in flags:
+            return None
+        return f"cannot remove '{path}': No such file or directory"
+    problem = _rm_problem(shell, path, node, flags)
+    if problem is not None:
+        return problem
+    del node.parent.children[node.name]
+    node.parent = None
+    if shell.previous_dir is not None and _is_inside(
+            shell.previous_dir, node):
+        shell.previous_dir = None
+    if "v" in flags:
+        kind = "directory " if node.is_dir else ""
+        shell.output(f"removed {kind}'{path}'")
+    return None
+
+
+def cmd_rm(shell, args):
+    """rm [-r|-R] [-f] [-d] [-v] путь...: удаляет файлы и каталоги.
+
+    Изменения выполняются только в памяти, источник VFS не меняется.
+    """
+    flags, paths = split_options("rm", args, "rRfdv")
+    if "R" in flags:
+        flags.add("r")
+    if not paths:
+        if "f" in flags:
+            return
+        raise ShellError("rm: missing operand")
+    errors = [error for error in
+              (_rm_one(shell, path, flags) for path in paths) if error]
+    if errors:
+        raise ShellError("; ".join(f"rm: {error}" for error in errors))
+
+
 def cmd_exit(shell, args):
     """Завершает работу эмулятора: exit [код]."""
     if len(args) > MAX_EXIT_ARGS:
@@ -198,6 +262,7 @@ COMMANDS = {
     "pwd": cmd_pwd,
     "uptime": cmd_uptime,
     "uniq": cmd_uniq,
+    "rm": cmd_rm,
     "exit": cmd_exit,
     "vfs-info": cmd_vfs_info,
 }

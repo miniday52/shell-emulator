@@ -1,0 +1,35 @@
+# Стартовый скрипт этапа 5 (запуск с examples/vfs/deep.xml).
+# Все изменения выполняются только в памяти.
+ls -l /etc
+# --- удаление файла ---
+rm -v /etc/motd
+ls /etc
+# --- несколько операндов, один из них отсутствует ---
+rm /etc/hostname /etc/nope
+ls -a /etc
+# --- -f игнорирует отсутствующие файлы ---
+rm -f /etc/nope
+rm -f
+# --- каталоги ---
+rm /etc
+rm -d /var
+rm -d /etc
+ls /
+rm -rv projects/app/assets
+ls -l projects/app
+rm -R projects
+ls
+# --- защита ---
+cd /var/log
+rm -r /var
+rm -r .
+rm -r /
+cd /
+rm -r tmp
+ls
+# --- ошибки ---
+rm
+rm /nope
+rm -x file
+vfs-info
+exit
